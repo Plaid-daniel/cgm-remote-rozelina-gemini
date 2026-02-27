@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>로젤리나 AI 케어 (V30 FINAL RESTORE)</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha1/0.6.0/sha1.min.js"></script>
+    
+    <style>
+        /* ================================================================================== */
+        /* [2] 스타일(CSS) 정의 영역                                                          */
+        /* 앱의 디자인, 색상, 배치 등을 담당합니다. (V23 풀버전 스타일 유지)                    */
+        /* ================================================================================== */
+        
+        /* 1. 전체 페이지 기본 설정 */
+        body { 
+            background-color: #000000; /* 완전 검정 배경 (배터리 절약) */
+            color: #ffffff; /* 기본 글자색: 흰색 */
+            font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; /* 폰트 */
+            overflow-x: hidden; /* 가로 스크롤 방지 */
+            padding-bottom: 80px; /* 하단 여백 */
+            
+            /* 모바일에서 앱처럼 보이게 하기 (텍스트 선택 방지) */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* 입력창에서는 텍스트 선택이 되어야 함 */
+        input, select, textarea {
+            -webkit-user-select: auto !important;
+            user-select: auto !important;
+        }
+        
+        /* 한글 입력 문제 해결을 위한 강제 설정 */
+        .korean-input {
+            ime-mode: active;
+            -webkit-ime-mode: active;
+        }
+
+        /* 2. 메인 혈당 숫자 디자인 */
+        .current-bg { 
+            font-size: 5.5rem; /* 아주 크게 */
+            font-weight: 700; /* 두껍게 */
+            text-align: center; 
+            margin-top: 40px; 
+            line-height: 1; 
+            letter-spacing: -2px; /* 자간 좁게 */
+            text-shadow: 0 0 30px rgba(255,255,255,0.15); /* 은은한 빛 */
+            transition: color 0.3s ease; /* 색상 바뀔 때 부드럽게 */
+            cursor: help; /* 마우스 올리면 힌트 */
+        }
+
+        /* 3. 혈당 아래 시간 표시 텍스트 */
+        .delta-text {
+            text-align: center;
+            color: #888888;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        /* 4. 차트 박스 컨테이너 */
+        .chart-box { 
+            background: #1e1e1e; /* 짙은 회색 */
+            border-radius: 25px; /* 둥근 모서리 */
+            padding: 15px; 
+            height: 380px; /* 높이 고정 */
+            margin-bottom: 30px; 
+            border: 1px solid #333; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5); /* 그림자 */
+        }
+
+        /* 5. 메인 버튼 카드 (식판, 히스토리) */
+        .btn-card { 
+            background: #1e1e1e; 
+            border: 1px solid #333; 
+            border-radius: 20px; 
+            padding: 25px 15px; 
+            text-align: center; 
+            cursor: pointer; 
+            height: 100%;
+            transition: all 0.2s ease; 
+            
+            /* 내용물 중앙 정렬 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* 버튼 눌렀을 때 효과 */
+        .btn-card:active { 
+            background: #333; 
+            transform: scale(0.97); /* 살짝 작아짐 */
+            border-color: #555;
+        }
+        
+        .btn-card-icon {
+            font-size: 3rem; /* 아이콘 크기 */
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .btn-card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #eeeeee;
+        }
+        
+        .btn-card-desc {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        /* 6. 설정 버튼 (우측 상단 톱니바퀴) */
+        .settings-btn { 
+            position: fixed; 
+            top: 25px; 
+            right: 25px; 
+            font-size: 1.8rem; 
+            cursor: pointer; 
+            z-index: 9999; 
+            color: #666; 
+            background: rgba(30, 30, 30, 0.8); /* 반투명 배경 */
+            border: 1px solid #333;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            line-height: 48px;
+            backdrop-filter: blur(5px); /* 블러 효과 */
+        }
+        
+        .settings-btn:active {
+            color: #fff;
+            background: #000;
+        }
+
+        /* 7. 즐겨찾기 가로 스크롤 영역 */
+        .fav-section-title {
+            color: #888;
+            margin-left: 5px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .fav-scroll { 
+            overflow-x: auto; 
+            white-space: nowrap; 
+            padding-bottom: 15px; 
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none; /* 스크롤바 숨김 */
+        }
+        
+        .fav-scroll::-webkit-scrollbar {
+            display: none; 
+        }
+
+        /* 즐겨찾기 알약 버튼 디자인 */
+        .fav-btn { 
+            display: inline-block; 
+            background: #2a2a2a; 
+            border: 1px solid #444; 
+            color: #ddd; 
+            padding: 12px 20px; 
+            border-radius: 30px; 
+            margin-right: 10px; 
+            cursor: pointer; 
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        
+        .fav-btn:active { 
+            background: #0d6efd; 
+            border-color: #0d6efd; 
+            color: white;
+        }
+
+        /* 8. 모달(팝업창) 스타일 */
+        .modal-content { 
+            background: #2c2c2c; 
+            color: #fff; 
+            border: 1px solid #555; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+        
+        .modal-header { 
+            border-bottom: 1px solid #444; 
+            padding: 20px;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer { 
+            border-top: 1px solid #444; 
+            padding: 20px;
+        }
+        
+        /* 9. 입력 폼 스타일 (인풋박스) */
+        .form-control, .form-select { 
+            background: #444; 
+            color: #fff; 
+            border: 1px solid #666; 
+            font-size: 1.1rem; 
+            padding: 12px;
+            border-radius: 10px;
+        }
+        
+        .form-control:focus, .form-select:focus { 
+            background: #505050; 
+            color: #fff; 
+            border-color: #999; 
+            box-shadow: none; 
+        }
+        
+        .form-control::placeholder { 
+            color: #aaa; 
+        }
+
+        /* 10. 혈당 수동 수정용 특수 인풋 스타일 */
+        .bg-input-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        
+        .bg-input { 
+            background: transparent; 
+            border: none; 
+            color: #ffd700; /* 노란색 */
+            font-size: 2.2rem; 
+            font-weight: bold; 
+            text-align: right; 
+            width: 140px; 
+            padding: 0;
+            margin-right: 5px;
+        }
+        
+        .bg-input:focus { 
+            background: #333; 
+            outline: none; 
+            border-bottom: 2px solid #ffd700; 
+            border-radius: 5px;
+        }
+
+        /* 11. 음식 목록 아이템 스타일 */
+        .custom-list-item {
+            background-color: #383838;
+            border: 1px solid #555;
+            color: white;
+            margin-bottom: 8px;
+            border-radius: 10px !important;
+        }
+        
+        /* 12. 공통 버튼 스타일 */
+        .btn-primary {
+            background-color: #0d6efd;
+            border: none;
+            padding: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 12px;
+        }
+        
+        .btn-success {
+            border-radius: 10px;
+            font-weight: bold;
+            padding: 12px;
+        }
+
+        /* 13. 로딩 애니메이션 (깜빡임 효과) */
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        .loading-text { 
+            animation: pulse 1.5s infinite; 
+        }
+        
+        /* 14. 툴팁 커스텀 (부트스트랩 오버라이드) */
+        .tooltip-inner {
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #555;
+            font-size: 0.9rem;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div class="settings-btn" onclick="openSettings()">⚙️</div>
+
+    <div class="container">
+        
+        <div id="statusMsg" class="alert alert-warning text-center mt-3 small shadow-sm" style="display:none;"></div>
+        
+        <div id="bgDisplay" class="current-bg text-secondary" title="데이터 로딩 중..." data-bs-toggle="tooltip" data-bs-placement="bottom">---</div>
+        <div id="deltaDisplay" class="delta-text">데이터 로딩 대기중...</div>
+
+        <div class="chart-box">
+            <canvas id="bgChart"></canvas>
+        </div>
+        
+        <div class="d-flex justify-content-center gap-3 mb-5">
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2" onclick="loadData(3)">3시간</button>
+            <button class="btn btn-sm btn-outline-light rounded-pill px-4 py-2" onclick="loadData(6)">6시간</button>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2" onclick="loadData(24)">24시간</button>
+        </div>
+
+        <div class="fav-section-title">⚡ 빠른 식사 입력 (터치 시 자동추가)</div>
+        <div class="fav-scroll mb-4" id="favContainer">
+            </div>
+
+        <div class="row g-3">
+            <div class="col-6">
+                <div class="btn-card" onclick="openEntryModal()">
+                    <span class="btn-card-icon">🍽️</span>
+                    <div class="btn-card-title">식판 기록</div>
+                    <div class="btn-card-desc">인슐린 자동 계산</div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="btn-card" onclick="openHistoryModal()">
+                    <span class="btn-card-icon">🔍</span>
+                    <div class="btn-card-title">히스토리</div>
+                    <div class="btn-card-desc">기록 검색 (1000개)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="settingsModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">⚙️ 환경 설정</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-secondary">Nightscout URL</label>
+                        <input type="text" id="cfgUrl" class="form-control" placeholder="https://my-site.herokuapp.com" inputmode="url">
+                        <small class="text-secondary">본인의 나이트스카우트 주소를 입력하세요.</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-secondary">API SECRET (비밀번호)</label>
+                        <input type="password" id="cfgSecret" class="form-control">
+                        <div class="alert alert-success py-1 mt-2 small">
+                            🛡️ 보안 모드 적용됨 (SHA1 암호화 전송)
+                        </div>
+                    </div>
+                    
+                    <hr class="border-secondary my-4">
+                    
+                    <label class="form-label text-warning fw-bold mb-3">인탄비 설정 (1U당 탄수화물 g)</label>
+                    <div class="d-flex gap-2">
+                        <div class="flex-grow-1">
+                            <small class="text-secondary d-block text-center mb-1">아침</small>
+                            <input type="number" id="cfgMorning" class="form-control text-center" value="15">
+                        </div>
+                        <div class="flex-grow-1">
+                            <small class="text-secondary d-block text-center mb-1">점심</small>
+                            <input type="number" id="cfgLunch" class="form-control text-center" value="15">
+                        </div>
+                        <div class="flex-grow-1">
+                            <small class="text-secondary d-block text-center mb-1">저녁</small>
+                            <input type="number" id="cfgDinner" class="form-control text-center" value="15">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary w-100 btn-lg" onclick="saveSettings()">설정 저장하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="entryModal" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen-sm-down">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">🍽️ 식사 & 인슐린 기록</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    
+                    <div class="mb-3">
+                        <label class="small text-secondary ms-1">기록 시간 (과거 선택 시 해당 시간 혈당 조회)</label>
+                        <input type="datetime-local" id="entryTime" class="form-control bg-dark text-white border-warning" onchange="updateBgForSelectedTime()">
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center bg-dark border border-secondary rounded p-3 mb-3">
+                        <div>
+                            <span class="text-secondary d-block" id="bgStatusLabel">현재 혈당</span>
+                            <small class="text-secondary" style="font-size:0.8rem;">(클릭하여 수정 가능)</small>
+                        </div>
+                        <div class="bg-input-wrapper">
+                            <input type="number" id="modalCurrentBg" class="bg-input" placeholder="---">
+                            <span class="text-secondary fs-5" style="margin-bottom: 5px;">mg/dL</span>
+                        </div>
+                    </div>
+
+                    <div class="card bg-dark border-secondary mb-3">
+                        <div class="card-body p-3">
+                            <div class="input-group mb-2">
+                                <span class="input-group-text bg-secondary text-white border-secondary">종류</span>
+                                <select id="foodPreset" class="form-select" onchange="onPresetChange()">
+                                    <option value="custom">직접입력</option>
+                                    </select>
+                            </div>
+                            
+                            <div class="input-group mb-2">
+                                <input type="text" id="foodName" class="form-control korean-input" lang="ko" placeholder="음식 이름 (예: 사과)" 
+                                       autocomplete="off" inputmode="text" autocorrect="off" autocapitalize="none" spellcheck="false">
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <div class="input-group" style="flex:1;">
+                                    <input type="number" id="foodWeight" class="form-control" placeholder="무게" oninput="calculateCarbs()">
+                                    <span class="input-group-text bg-secondary text-white border-secondary">g</span>
+                                </div>
+                                <div class="input-group" style="flex:1;">
+                                    <input type="number" id="manualCarbs" class="form-control border-warning text-warning fw-bold" placeholder="탄수">
+                                    <span class="input-group-text bg-secondary text-white border-secondary">g</span>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-success w-100 mt-3" onclick="addFood()">+ 식판에 담기</button>
+                        </div>
+                    </div>
+                    
+                    <label class="small text-secondary ms-1 mb-1">식판 목록</label>
+                    <ul id="foodList" class="list-group mb-3 text-small" style="max-height:150px; overflow-y:auto;">
+                        </ul>
+                    
+                    <div class="alert alert-secondary p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fs-5">총 탄수: <b id="totalCarbs" class="text-warning">0</b>g</span>
+                            <span class="fs-5">추천: <b id="suggInsulin" class="text-danger fw-bold">0.0</b>U</span>
+                        </div>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="small text-center d-block text-secondary mb-1">식사 인슐린(Bolus)</label>
+                            <input type="number" id="bolus" class="form-control text-center fw-bold text-warning fs-3" placeholder="0">
+                        </div>
+                        <div class="col-6">
+                            <label class="small text-center d-block text-secondary mb-1">기저(Basal/메모)</label>
+                            <input type="number" id="basal" class="form-control text-center fs-3" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-lg btn-primary w-100 py-3 fw-bold" onclick="submitData()">✅ 기록 저장하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="historyModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">🔍 기록 검색</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-dark border-secondary text-secondary">검색</span>
+                        <input id="searchKey" class="form-control korean-input" lang="ko" placeholder="메뉴명, 메모 등 입력" 
+                               autocomplete="off" inputmode="search" autocorrect="off" autocapitalize="none" spellcheck="false"
+                               onkeypress="if(event.keyCode==13){searchData();}">
+                        <button class="btn btn-primary px-4" onclick="searchData()">찾기</button>
+                    </div>
+                    <div id="searchResults" style="max-height:500px; overflow-y:auto; border-top:1px solid #444;"></div>
+                    <div class="text-end mt-2">
+                        <small class="text-secondary">* 최근 1000개의 기록 중에서 검색합니다.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // ==================================================================================
+        // [A] 전역 설정 및 데이터베이스
+        // ==================================================================================
+        
+        // 음식 DB: { name: "표시이름", ratio: 탄수화물비율(0~1) }
+        const FOOD_DB = [
+            { name: "🍚 밥 (백미)", ratio: 0.33 },
+            { name: "🌾 밥 (잡곡)", ratio: 0.30 },
+            { name: "🍜 라면/면류", ratio: 0.28 },
+            { name: "🍞 식빵/빵류", ratio: 0.50 },
+            { name: "🥔 감자/고구마", ratio: 0.20 },
+            { name: "🍎 사과", ratio: 0.13 },
+            { name: "🍓 딸기", ratio: 0.06 }, 
+            { name: "🍌 바나나", ratio: 0.23 },
+            { name: "🍇 포도", ratio: 0.15 },
+            { name: "🥛 우유", ratio: 0.05 },
+            { name: "🥪 샌드위치", ratio: 0.35 },
+            { name: "🍕 피자", ratio: 0.30 },
+            { name: "🍫 초콜릿", ratio: 0.60 },
+            { name: "🍰 케이크", ratio: 0.45 },
+            { name: "🍦 아이스크림", ratio: 0.25 }
+        ];
+
+        let cfg = { url: '', sec: '', m: 15, l: 15, d: 15 }; // 설정값 저장 객체
+        let meals = []; // 현재 입력 중인 식사 목록
+        let chartInstance = null; // 차트 인스턴스
+        let bgDataCache = []; // 혈당 데이터 캐시
+        let currentRealTimeBg = 0; // 실시간 혈당값
+        
+        const PROXY_URL = "https://corsproxy.io/?";
+
+        // ==================================================================================
+        // [B] 초기화 및 설정 로드
+        // 앱이 시작될 때 실행되는 부분입니다.
+        // ==================================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // 로컬 스토리지에서 설정 불러오기
+            const saved = localStorage.getItem('roselina_v23_full');
+            if (saved) {
+                try {
+                    cfg = JSON.parse(saved);
+                } catch(e) { console.error("설정 로드 오류", e); }
+            }
+            
+            // 설정 모달에 값 채우기
+            document.getElementById('cfgUrl').value = cfg.url || '';
+            document.getElementById('cfgSecret').value = cfg.sec || '';
+            document.getElementById('cfgMorning').value = cfg.m || 15;
+            document.getElementById('cfgLunch').value = cfg.l || 15;
+            document.getElementById('cfgDinner').value = cfg.d || 15;
+            
+            // 음식 DB 셀렉트 박스 초기화
+            initFoodSelect();
+            // 즐겨찾기 버튼 생성
+            initFavButtons();
+
+            // URL이 있으면 데이터 로드, 없으면 설정창 띄우기
+            if(cfg.url && cfg.url.length > 5) {
+                loadData();
+            } else {
+                openSettings();
+            }
+        });
+
+        // 음식 DB를 select 박스에 추가하는 함수
+        function initFoodSelect() {
+            let sel = document.getElementById('foodPreset');
+            // 기존 옵션 유지하고 뒤에 추가
+            FOOD_DB.forEach(f => {
+                let opt = document.createElement('option');
+                opt.value = f.ratio;
+                opt.text = f.name;
+                sel.add(opt);
+            });
+        }
+
+        // 즐겨찾기 버튼 생성 함수 (상단 가로 스크롤)
+        function initFavButtons() {
+            let container = document.getElementById('favContainer');
+            // 자주 먹는 음식 프리셋 정의
+            let favorites = [
+                {n:'백반', c:70}, 
+                {n:'라면', c:85}, 
+                {n:'커피', c:10}, 
+                {n:'사과', c:20}, 
+                {n:'우유', c:10},
+                {n:'샌드위치', c:35},
+                {n:'피자', c:60}
+            ];
+            
+            container.innerHTML = favorites.map(f => 
+                `<div class="fav-btn" onclick="quickFill('${f.n}', ${f.c})">${f.n}(${f.c}g)</div>`
+            ).join('');
+        }
+
+        // 설정 저장 함수
+        function saveSettings() {
+            let u = document.getElementById('cfgUrl').value.trim();
+            // URL 정규화 (끝에 슬래시 제거)
+            u = u.replace(/\/$/, "").replace(/\/api\/v1$/, "");
+            
+            cfg = { 
+                url: u, 
+                sec: document.getElementById('cfgSecret').value.trim(),
+                m: parseFloat(document.getElementById('cfgMorning').value) || 15,
+                l: parseFloat(document.getElementById('cfgLunch').value) || 15,
+                d: parseFloat(document.getElementById('cfgDinner').value) || 15
+            };
+            
+            localStorage.setItem('roselina_v23_full', JSON.stringify(cfg));
+            bootstrap.Modal.getInstance(document.getElementById('settingsModal')).hide();
+            loadData(); // 데이터 새로고침
+        }
+        
+        function openSettings() { 
+            new bootstrap.Modal(document.getElementById('settingsModal')).show(); 
+        }
+
+        // ==================================================================================
+        // [C] 데이터 로드 및 차트
+        // 나이트스카우트 서버에서 혈당을 가져와 차트를 그립니다.
+        // ==================================================================================
+        async function loadData(hours = 6) {
+            if(!cfg.url) return;
+            
+            document.getElementById('deltaDisplay').innerText = "데이터 연결 중...";
+            document.getElementById('deltaDisplay').className = "delta-text loading-text";
+
+            // [복구 완료] V23 원본과 동일하게 헤더 없이 요청 (프록시 통과)
+            let targetUrl = PROXY_URL + encodeURIComponent(`${cfg.url}/api/v1/entries.json?count=500`);
+
+            try {
+                let res = await fetch(targetUrl);
+                if(!res.ok) throw new Error("Status: " + res.status);
+                
+                let data = await res.json();
+                
+                if(data.length > 0) {
+                    bgDataCache = data;
+                    let last = data[0];
+                    let prev = data[1] ? data[1].sgv : '없음'; // 지난 혈당
+                    
+                    currentRealTimeBg = last.sgv;
+                    
+                    // 메인 화면 업데이트
+                    document.getElementById('bgDisplay').innerText = last.sgv;
+                    document.getElementById('bgDisplay').style.color = getBgColor(last.sgv);
+                    
+                    // [기능 추가] 마우스 오버 시 지난 혈당 정보 표시 (툴팁)
+                    let prevTime = data[1] ? moment(data[1].dateString).format('HH:mm') : '';
+                    document.getElementById('bgDisplay').title = `지난 측정: ${prev} mg/dL (${prevTime})`;
+                    
+                    // 툴팁 재초기화
+                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                      return new bootstrap.Tooltip(tooltipTriggerEl);
+                    });
+                    
+                    document.getElementById('deltaDisplay').className = "delta-text";
+                    document.getElementById('deltaDisplay').innerText = moment(last.dateString).fromNow() + " 측정됨";
+                    document.getElementById('statusMsg').style.display = 'none';
+                    
+                    drawChart(hours);
+                }
+            } catch(e) {
+                console.error(e);
+                document.getElementById('bgDisplay').innerText = "---";
+                document.getElementById('deltaDisplay').innerText = "연결 실패";
+                document.getElementById('statusMsg').style.display = 'block';
+                document.getElementById('statusMsg').innerText = "데이터 연결에 실패했습니다. URL과 인터넷 상태를 확인해주세요.";
+            }
+        }
+
+        // 혈당 수치별 색상 반환
+        function getBgColor(v) { 
+            if (v < 70 || v > 250) return '#ff4444'; // 위험 (빨강)
+            if (v > 180) return '#ffd700'; // 주의 (노랑)
+            return '#00ff00'; // 정상 (초록)
+        }
+
+        // 차트 그리기
+        function drawChart(hours) {
+            if(bgDataCache.length === 0) return;
+            
+            let ctx = document.getElementById('bgChart').getContext('2d');
+            let cutoff = moment().subtract(hours, 'hours').valueOf();
+            
+            // 데이터 필터링 (선택한 시간 내 데이터만)
+            let pts = bgDataCache.filter(d => moment(d.dateString).valueOf() > cutoff)
+                                 .map(d => ({x: moment(d.dateString).valueOf(), y: d.sgv}))
+                                 .reverse();
+            
+            if (chartInstance) chartInstance.destroy();
+            
+            // 그라데이션 효과
+            let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, '#ff4444'); 
+            gradient.addColorStop(0.3, '#ffd700'); 
+            gradient.addColorStop(0.6, '#00ff00');
+            
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: { 
+                    datasets: [{ 
+                        data: pts, 
+                        borderColor: gradient, 
+                        borderWidth: 3, 
+                        pointRadius: 0, 
+                        pointHoverRadius: 6,
+                        tension: 0.4 
+                    }] 
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: {display:false},
+                        // [추가] 툴팁 활성화
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }, 
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    },
+                    scales: { 
+                        x: { type:'time', grid:{color:'#333'}, ticks:{color:'#888'} }, 
+                        y: { grid:{color:'#333'}, ticks:{color:'#888'} } 
+                    } 
+                }
+            });
+        }
+
+        // ==================================================================================
+        // [D] 식사 기록 및 계산 로직
+        // 식판에 음식을 담고, 인슐린을 계산하고 저장합니다.
+        // ==================================================================================
+
+        // 즐겨찾기 빠른 추가
+        function quickFill(name, carbs) {
+            openEntryModal();
+            setTimeout(() => { 
+                meals.push({n: name, w: 0, c: carbs}); 
+                updateList(); 
+            }, 300);
+        }
+
+        // [수정] 식판 기록 모달 열기 (리셋 기능 포함)
+        function openEntryModal() {
+            meals=[]; // 목록 초기화
+            updateList();
+            
+            // 시간 초기화 (현재 시간)
+            document.getElementById('entryTime').value = moment().format('YYYY-MM-DDTHH:mm');
+            
+            // 입력창 리셋
+            document.getElementById('foodName').value = "";
+            document.getElementById('manualCarbs').value = "";
+            document.getElementById('foodWeight').value = "";
+            document.getElementById('bolus').value = "";
+            document.getElementById('basal').value = "";
+            
+            // 혈당 초기값 설정
+            let bgVal = currentRealTimeBg || "";
+            document.getElementById('modalCurrentBg').value = bgVal;
+            document.getElementById('bgStatusLabel').innerText = "현재 혈당";
+            
+            // 색상 적용
+            if(bgVal) {
+                document.getElementById('modalCurrentBg').style.color = getBgColor(bgVal);
+            } else {
+                document.getElementById('modalCurrentBg').style.color = "#ffd700";
+            }
+            
+            new bootstrap.Modal(document.getElementById('entryModal')).show();
+        }
+
+        // 타임머신: 날짜 변경 시 과거 혈당 조회
+        async function updateBgForSelectedTime() {
+            let timeStr = document.getElementById('entryTime').value;
+            if(!timeStr) return;
+            
+            let bgInput = document.getElementById('modalCurrentBg');
+            let label = document.getElementById('bgStatusLabel');
+            
+            label.innerText = "조회 중...";
+            
+            let findDate = moment(timeStr).toISOString();
+            
+            try {
+                // 해당 시간보다 작거나 같은($lte) 가장 최근 데이터 1개 조회 (헤더 없음)
+                let res = await fetch(PROXY_URL + encodeURIComponent(`${cfg.url}/api/v1/entries.json?find[dateString][$lte]=${findDate}&count=1`));
+                let data = await res.json();
+                
+                if(data.length > 0) {
+                    let bg = data[0].sgv;
+                    label.innerText = "선택 시간 혈당 (수정가능)";
+                    bgInput.value = bg;
+                    bgInput.style.color = getBgColor(bg);
+                } else { 
+                    label.innerText = "기록 없음 (직접 입력하세요)";
+                    bgInput.value = "";
+                }
+            } catch(e) { 
+                label.innerText = "조회 실패";
+                bgInput.value = ""; 
+            }
+        }
+
+        // 프리셋 변경 시 폼 업데이트
+        function onPresetChange() {
+            let sel = document.getElementById('foodPreset');
+            let txt = sel.options[sel.selectedIndex].text;
+            let val = sel.value;
+            
+            if(val === 'custom') {
+                document.getElementById('foodName').value = "";
+                document.getElementById('foodName').placeholder = "음식 이름";
+            } else {
+                // 이모지 등을 제거하고 텍스트만 추출
+                document.getElementById('foodName').value = txt; 
+            }
+            calculateCarbs();
+        }
+
+        // 탄수화물 자동 계산
+        function calculateCarbs() {
+            let ratio = parseFloat(document.getElementById('foodPreset').value);
+            let weight = parseFloat(document.getElementById('foodWeight').value) || 0;
+            
+            // custom이 아니고 무게가 있으면 자동 계산
+            if (!isNaN(ratio) && weight > 0) {
+                document.getElementById('manualCarbs').value = Math.round(weight * ratio);
+            }
+        }
+
+        // 음식 추가 버튼 클릭
+        function addFood() {
+            let name = document.getElementById('foodName').value || "음식";
+            let weight = parseFloat(document.getElementById('foodWeight').value) || 0;
+            let carbs = parseFloat(document.getElementById('manualCarbs').value) || 0;
+
+            if (carbs > 0 || weight > 0) {
+                meals.push({n: name, w: weight, c: carbs});
+                updateList();
+                
+                // 입력폼 초기화
+                document.getElementById('foodWeight').value = "";
+                document.getElementById('manualCarbs').value = "";
+                document.getElementById('foodName').focus(); // 연속 입력 편의성
+            }
+        }
+
+        // 리스트 업데이트 및 추천 인슐린 계산
+        function updateList() {
+            let list = document.getElementById('foodList'); 
+            list.innerHTML='';
+            let total = 0;
+            
+            meals.forEach((m,i) => {
+                total += m.c;
+                list.innerHTML += `
+                <li class="list-group-item d-flex justify-content-between align-items-center p-2 custom-list-item">
+                    <span>${m.n} <small class="text-secondary">(${m.w>0 ? m.w+'g' : '-'})</small></span>
+                    <span>
+                        <b class="text-warning me-2">${m.c}g</b> 
+                        <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="removeMeal(${i})">×</button>
+                    </span>
+                </li>`;
+            });
+            
+            document.getElementById('totalCarbs').innerText = total;
+            
+            // 인탄비 적용 (시간대별)
+            let h = new Date().getHours();
+            let ratio = cfg.d; // 기본 저녁
+            if (h >= 5 && h < 11) ratio = cfg.m; 
+            else if (h >= 11 && h < 17) ratio = cfg.l;
+            
+            document.getElementById('suggInsulin').innerText = (ratio > 0) ? (total/ratio).toFixed(1) : "0.0";
+        }
+
+        function removeMeal(index) {
+            meals.splice(index, 1);
+            updateList();
+        }
+
+        // ==================================================================================
+        // [E] 데이터 저장 (POST)
+        // ==================================================================================
+        async function submitData() {
+            if(!cfg.sec) return alert("설정에서 비밀번호(API SECRET)를 입력해주세요.");
+            
+            // input 태그의 value를 가져옴
+            let bgVal = document.getElementById('modalCurrentBg').value;
+            
+            let noteParts = [];
+            // 식전혈당 저장 (띄어쓰기 없이 저장해서 일관성 유지)
+            if(bgVal && !isNaN(bgVal)) noteParts.push(`식전혈당:${bgVal}`); 
+            
+            // 기저 저장
+            let b = parseFloat(document.getElementById('basal').value);
+            if(b > 0) noteParts.push(`기저:${b}U`);
+            
+            let finalNote = noteParts.join(', ');
+
+            // Nightscout Treatment 포맷
+            let payload = {
+                "enteredBy": "Roselina App", 
+                "eventType": "Meal Bolus",
+                "reason": meals.map(m=>m.n).join(', ') || "식사",
+                "carbs": parseFloat(document.getElementById('totalCarbs').innerText),
+                "insulin": parseFloat(document.getElementById('bolus').value)||null,
+                "notes": finalNote,
+                "created_at": moment(document.getElementById('entryTime').value).toISOString()
+            };
+
+            try {
+                // 저장(POST)은 보안 헤더 필수
+                let res = await fetch(PROXY_URL + encodeURIComponent(`${cfg.url}/api/v1/treatments`), {
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json', 'API-SECRET': sha1(cfg.sec) }, 
+                    body: JSON.stringify(payload)
+                });
+                
+                if(res.ok) { 
+                    alert("✅ 저장 완료!"); 
+                    bootstrap.Modal.getInstance(document.getElementById('entryModal')).hide(); 
+                    loadData(); 
+                }
+                else { 
+                    alert("⛔ 저장 실패: 비밀번호를 확인하세요."); 
+                }
+            } catch(e) { 
+                alert("⚠️ 네트워크 오류: 인터넷 연결을 확인하세요."); 
+            }
+        }
+
+        // ==================================================================================
+        // [F] 히스토리 & 검색 (수정됨)
+        // ==================================================================================
+        function openHistoryModal() { 
+            new bootstrap.Modal(document.getElementById('historyModal')).show(); 
+            searchData(); 
+        }
+        
+        async function searchData() {
+            let searchInput = document.getElementById('searchKey').value;
+            let k = searchInput ? searchInput.trim().toLowerCase() : "";
+            
+            let div = document.getElementById('searchResults');
+            div.innerHTML = "<div class='text-center p-4 text-secondary loading-text'>데이터를 불러오는 중입니다...</div>";
+            
+            try {
+                // [복구 완료] V23 원본과 동일하게 헤더 없이 요청 (프록시 통과)
+                let res = await fetch(PROXY_URL + encodeURIComponent(`${cfg.url}/api/v1/treatments.json?count=1000`));
+                let d = await res.json();
+                
+                // 검색어 필터링 (로직 강화 유지: 공백 제거, 대소문자 무시)
+                if(k) {
+                    d = d.filter(i => {
+                        let reason = (i.reason || "").toString().toLowerCase();
+                        let notes = (i.notes || "").toString().toLowerCase();
+                        let carbs = (i.carbs || "").toString();
+                        let insulin = (i.insulin || "").toString();
+                        return reason.includes(k) || notes.includes(k) || carbs.includes(k) || insulin.includes(k);
+                    });
+                }
+                
+                if(!d.length) { 
+                    div.innerHTML = "<div class='text-center p-4 text-secondary'>기록이 없습니다.</div>"; 
+                    return; 
+                }
+
+                div.innerHTML = d.map(i => {
+                    let time = moment(i.created_at);
+                    let checkTime = time.clone().add(2, 'hours').valueOf();
+                    let now = moment().valueOf();
+                    let notes = i.notes || "";
+                    
+                    // 배지 로직 유지
+                    let startBgBadge = "";
+                    let match = notes.match(/식전혈당\s*[:=]\s*(\d+)/); 
+                    if(match) {
+                        startBgBadge = `<span class="badge bg-dark border border-warning text-warning me-1">식전: ${match[1]}</span>`;
+                    }
+                    
+                    let basalBadge = "";
+                    let matchB = notes.match(/기저\s*[:=]\s*(\d+(\.\d+)?)U/);
+                    if(matchB) {
+                        basalBadge = `<span class="badge bg-secondary text-white me-1">기저: ${matchB[1]}U</span>`;
+                    }
+
+                    // 본문 표시용 텍스트 정리
+                    let cleanNotes = notes
+                        .replace(/식전혈당\s*[:=]\s*\d+,?\s*/, '')
+                        .replace(/기저\s*[:=]\s*\d+(\.\d+)?U,?\s*/, '');
+
+                    return `
+                    <div class="p-3 border-bottom border-secondary">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                ${startBgBadge} ${basalBadge}
+                                <strong class="fs-5">${i.reason || '기록'}</strong>
+                            </div>
+                            <small class="text-secondary">${time.format('MM/DD HH:mm')}</small>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <span class="badge bg-warning text-dark me-1">탄수: ${i.carbs||0}g</span>
+                            <span class="badge bg-danger me-1">인슐: ${i.insulin||0}U</span>
+                            ${cleanNotes ? `<span class="text-secondary small ms-2">📝 ${cleanNotes}</span>` : ''}
+                        </div>
+                        
+                        <div class="text-end mt-2">
+                            ${now > checkTime 
+                                ? `<button class="btn btn-sm btn-outline-info" onclick="checkBg(${checkTime}, this)">📉 2시간 뒤 혈당 확인</button>` 
+                                : `<span class="badge bg-dark border border-secondary text-secondary p-2">⏳ 2시간 측정 대기중 (${moment(checkTime).fromNow()})</span>`
+                            }
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(e) { 
+                console.error(e);
+                div.innerHTML = "<div class='text-center p-4 text-danger'>데이터 로드 실패</div>"; 
+            }
+        }
+
+        // 식후 2시간 혈당 확인 (헤더 없이 요청)
+        async function checkBg(ts, btn) {
+            btn.innerText = "조회 중...";
+            btn.disabled = true;
+            try {
+                let findDate = moment(ts).toISOString();
+                // 해당 시간 이후($gte) 첫 번째 데이터 조회 (헤더 없음)
+                let res = await fetch(PROXY_URL + encodeURIComponent(`${cfg.url}/api/v1/entries.json?find[dateString][$gte]=${findDate}&count=1`));
+                let data = await res.json();
+                
+                if(data.length) {
+                    let bg = data[0].sgv;
+                    let color = getBgColor(bg);
+                    btn.outerHTML = `<span class="fw-bold fs-6 px-2 py-1 border rounded" style="color:${color}; border-color:${color} !important;">식후 2h: ${bg}</span>`;
+                } else { 
+                    btn.innerText = "기록없음"; 
+                    btn.disabled = false;
+                }
+            } catch(e) { 
+                btn.innerText = "오류"; 
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
