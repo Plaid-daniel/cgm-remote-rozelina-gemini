@@ -6,15 +6,15 @@
     
     <meta name="referrer" content="no-referrer">
     
-    <title>로젤리나 AI 케어 (V43 ULTIMATE UNCOMPRESSED EDITION)</title>
+    <title>로젤리나 AI 케어 (V44 ULTIMATE - GRAPH FIXED)</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js" crossorigin="anonymous"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js" crossorigin="anonymous"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@0.5.7/chartjs-plugin-annotation.min.js" crossorigin="anonymous"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js" crossorigin="anonymous"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha1/0.6.0/sha1.min.js" crossorigin="anonymous"></script>
     
@@ -782,7 +782,7 @@
         
         .bg-input { 
             background-color: transparent; 
-            color: #ffd700; 
+            color: #ffd700; /* 황금색 포인트 컬러 */
             
             border-top-width: 0px;
             border-right-width: 0px;
@@ -828,7 +828,7 @@
             outline-color: transparent;
             
             border-bottom-color: #ffd700; 
-            background-color: rgba(51, 51, 51, 0.5); 
+            background-color: rgba(51, 51, 51, 0.5); /* 입력 활성화 시 미세한 배경 표시 */
             
             border-top-left-radius: 5px;
             border-top-right-radius: 5px;
@@ -1442,7 +1442,7 @@
 
         /**
          * 나이트스카웃 데이터베이스에서 제공하는 공식 Direction String Protocol을 분석하여
-         * 사용자의 직관적인 이해를 돕기 위한 유니코드 기호(Arrows)로 1:1 매핑 변환을 수행합니다.
+         * 사용자의 직관적인 이해를 돕기 위한 유니코드 화살표 기호로 1:1 매핑 변환을 수행합니다.
          * * @param {string} direction - "Flat", "SingleUp" 등의 원시 문자열 데이터
          * @returns {string} 화면에 출력될 최종 화살표 기호
          */
@@ -1507,30 +1507,24 @@
 
         /**
          * 브라우저의 DOM 트리가 완전히 구축된 시점에 단 한 번 실행되는 초기화 이벤트 리스너입니다.
-         * React나 Vue의 componentDidMount 와 동일한 역할을 수행합니다.
          */
         document.addEventListener('DOMContentLoaded', function() {
-            // 콘솔 창에 애플리케이션 초기화 로그를 명시적으로 출력하여 디버깅을 돕습니다.
             console.log("[LIFECYCLE] Application DOM fully loaded and parsed. Initialization started.");
             
-            // 로컬 스토리지에 접근하여 'roselina_v42_hybrid'라는 키로 저장된 문자열이 있는지 검사합니다.
+            // 로컬 스토리지에 접근하여 키로 저장된 문자열이 있는지 검사합니다.
             let savedDataString = localStorage.getItem('roselina_v42_hybrid');
             
             // 저장된 데이터가 존재한다면 파싱 로직을 수행합니다.
             if (savedDataString !== null) { 
                 try { 
-                    // 문자열을 JavaScript Object 객체로 변환합니다.
                     let parsedDataObject = JSON.parse(savedDataString);
                     
-                    // 변환된 객체의 각 속성들을 전역 cfg 변수에 명시적으로 대입하여 오버라이드 합니다.
                     cfg.url = parsedDataObject.url;
                     cfg.sec = parsedDataObject.sec;
                     cfg.m = parsedDataObject.m;
                     cfg.l = parsedDataObject.l;
                     cfg.d = parsedDataObject.d;
                     
-                    // 만약 구버전에서 마이그레이션 하여 foodDb 배열이 존재하지 않거나 비어있는 경우,
-                    // 오류 방지를 위해 디폴트 배열의 데이터를 다시 깊은 복사하여 채워넣습니다.
                     if (parsedDataObject.foodDb === undefined || parsedDataObject.foodDb === null || parsedDataObject.foodDb.length === 0) {
                         cfg.foodDb = JSON.parse(JSON.stringify(DEFAULT_FOOD_DB));
                     } else {
@@ -1556,22 +1550,17 @@
             renderFoodSettings();    
             initFavButtons();        
 
-            // 환경 설정 내에 URL 주소가 5글자 이상(유효한 형태)으로 존재한다면 곧바로 메인 데이터 로딩을 시작하고,
-            // 그렇지 않다면 초기 진입자로 간주하여 강제로 환경 설정 모달을 띄워 입력을 유도합니다.
+            // URL 설정이 이미 존재한다면 바로 데이터 요청 시작
             let urlLength = cfg.url.length;
             if (urlLength > 5) {
                 console.log("[LIFECYCLE] Valid URL detected. Initiating data sequence.");
-                loadData(6); // 기본값인 최근 6시간 분량의 데이터를 로드합니다.
+                loadData(6); 
             } else {
                 console.log("[LIFECYCLE] URL missing. Forcing user to open settings panel.");
                 openSettings();
             }
         });
 
-        /**
-         * 사용자가 우측 상단의 톱니바퀴 아이콘을 클릭했을 때 호출되는 함수입니다.
-         * 모달을 띄우기 직전에 내부 테이블의 데이터 무결성을 보장하기 위해 렌더링 함수를 선행 호출합니다.
-         */
         function openSettings() { 
             console.log("[ACTION] User requested to open Settings Modal.");
             renderFoodSettings(); 
@@ -1580,20 +1569,13 @@
             bootstrapModalInstance.show(); 
         }
 
-        /**
-         * 설정 모달 내에서 '저장 및 적용하기' 버튼을 눌렀을 때 발동되는 복합 커밋(Commit) 함수입니다.
-         * 입력 폼의 데이터를 스크래핑하여 정규화한 뒤, 메모리에 적재하고 브라우저 DB에 영구 저장합니다.
-         */
         function saveSettings() {
             console.log("[ACTION] Committing new settings into application memory.");
             
             // 1단계: URL 문자열 스크래핑 및 불순물 제거 파이프라인
             let rawUrlInput = document.getElementById('cfgUrl').value;
-            // 앞뒤 공백을 제거합니다.
             let trimmedUrl = rawUrlInput.trim();
-            // 문자열의 맨 끝에 슬래시(/)가 있다면 정규식을 통해 잘라냅니다.
             let noSlashUrl = trimmedUrl.replace(/\/$/, "");
-            // 사용자가 무심코 '/api/v1' 경로까지 포함해서 복사해왔을 경우를 대비해 해당 경로를 지워버립니다.
             let rootDomainUrl = noSlashUrl.replace(/\/api\/v1\/?$/, ""); 
             
             // 2단계: 프로토콜 검사 및 강제 암호화(HTTPS) 라우팅
@@ -1611,13 +1593,11 @@
             let tableElementBodyRows = document.getElementById('foodSettingList').rows;
             let totalRowsCount = tableElementBodyRows.length;
             
-            // for 루프를 돌면서 모든 tr 안의 input 값을 검사하고 추출합니다.
             for(let iterationIndex = 0; iterationIndex < totalRowsCount; iterationIndex++) {
                 let extractedItemName = document.getElementById(`fname_${iterationIndex}`).value;
                 let extractedItemRatioStr = document.getElementById(`fratio_${iterationIndex}`).value;
                 let extractedItemRatioFloat = parseFloat(extractedItemRatioStr);
                 
-                // 이름이 빈칸이 아니고, 비율 값이 정상적인 부동소수점 숫자로 파싱될 때에만 배열에 밀어넣습니다.
                 let isNameValid = (extractedItemName !== "");
                 let isRatioValid = (isNaN(extractedItemRatioFloat) === false);
                 
@@ -1629,7 +1609,7 @@
                 }
             }
 
-            // 4단계: 전역 cfg 객체의 구조체를 새로운 값들로 완벽히 교체합니다.
+            // 4단계: 전역 cfg 객체 갱신
             cfg.url = finalCleanUrl;
             cfg.sec = document.getElementById('cfgSecret').value.trim();
             
@@ -1644,23 +1624,19 @@
             
             cfg.foodDb = reconstructedFoodDatabase;
             
-            // 5단계: 브라우저 로컬 스토리지에 동기식(Synchronous)으로 직렬화 데이터를 덮어씁니다.
+            // 5단계: 로컬 스토리지에 동기식 저장
             let jsonStringifiedConfig = JSON.stringify(cfg);
             localStorage.setItem('roselina_v42_hybrid', jsonStringifiedConfig);
             console.log("[LIFECYCLE] Settings successfully serialized and stored to Local Storage.");
             
-            // 6단계: 정리된 URL을 사용자에게 피드백하기 위해 인풋 박스에 다시 입력합니다.
             document.getElementById('cfgUrl').value = finalCleanUrl;
             
-            // 7단계: 변경된 음식 DB에 맞게 식판 기록 모달의 드롭다운을 즉각 재생성합니다.
             initFoodSelect();
             
-            // 8단계: 열려있던 모달 객체를 탐색하여 강제로 은닉(Hide) 시킵니다.
             let activeModalElement = document.getElementById('settingsModal');
             let activeModalInstance = bootstrap.Modal.getInstance(activeModalElement);
             activeModalInstance.hide();
             
-            // 9단계: 바뀐 URL 또는 설정에 맞추어 네트워크 통신 파이프라인을 재가동합니다.
             loadData(6);
         }
 
@@ -1670,21 +1646,15 @@
          * ==================================================================================
          */
         
-        /**
-         * 식사 기록 모달 안에 존재하는 <select> 옵션들을 전역 foodDb 배열 상태와 동기화시킵니다.
-         */
         function initFoodSelect() {
             let dropDownElement = document.getElementById('foodPreset');
             
-            // 인덱스 0번은 항상 "직접 수동으로 입력하기" 용도이므로 보존하고,
-            // 그 뒤에 존재하는 모든 옵션 노드들을 파괴하여 쓰레기를 치웁니다.
             let currentOptionsLength = dropDownElement.options.length;
             while (currentOptionsLength > 1) {
                 dropDownElement.remove(1);
                 currentOptionsLength = dropDownElement.options.length;
             }
             
-            // 배열을 순회하며 새로운 옵션 노드를 생성 및 DOM 트리에 부착합니다.
             let foodArrayLength = cfg.foodDb.length;
             for(let idx = 0; idx < foodArrayLength; idx++) {
                 let currentFoodObject = cfg.foodDb[idx];
@@ -1697,19 +1667,14 @@
             }
         }
 
-        /**
-         * 환경 설정 모달의 음식 편집 전용 테이블 <tbody> 내부에 행(tr) 요소들을 그려넣습니다.
-         */
         function renderFoodSettings() {
             let tableBodyNode = document.getElementById('foodSettingList');
-            // innerHTML을 비워 DOM 노드를 완전히 초기화합니다.
             tableBodyNode.innerHTML = ''; 
             
             let foodArrayLength = cfg.foodDb.length;
             for(let idx = 0; idx < foodArrayLength; idx++) {
                 let currentFoodObject = cfg.foodDb[idx];
                 
-                // 백틱(Backtick)을 사용한 템플릿 리터럴로 다중 문자열을 조립합니다.
                 let tableRowHtmlString = `
                     <tr>
                         <td>
@@ -1723,15 +1688,10 @@
                         </td>
                     </tr>
                 `;
-                // 만들어진 문자열을 DOM에 추가 주입합니다.
                 tableBodyNode.innerHTML = tableBodyNode.innerHTML + tableRowHtmlString;
             }
         }
 
-        /**
-         * 사용자가 '+ 신규 메뉴 추가' 버튼을 눌렀을 때 배열에 디폴트 객체를 Push 하고 
-         * 즉시 화면을 리렌더링하여 반응성을 부여합니다.
-         */
         function addFoodItemRow() {
             console.log("[ACTION] User appended a new blank food row.");
             let dummyFoodObject = {
@@ -1742,105 +1702,80 @@
             renderFoodSettings();
         }
 
-        /**
-         * 특정 음식 행의 삭제(X) 버튼을 눌렀을 때 발동하는 함수입니다.
-         * @param {number} indexToRemove - 파괴할 대상의 배열 내 고유 인덱스 번호
-         */
         function deleteFoodItem(indexToRemove) {
             console.log(`[ACTION] User requested deletion of food item at index ${indexToRemove}.`);
-            // splice 함수: indexToRemove 위치부터 1개의 엘리먼트를 원본 배열에서 절단합니다.
             cfg.foodDb.splice(indexToRemove, 1);
-            // 배열 상태가 변했으므로 화면을 동기화시킵니다.
             renderFoodSettings(); 
         }
 
         /**
          * ==================================================================================
          * [PART E] 네트워크 코어 파이프라인 (Network Core Pipeline - HYBRID ARCHITECTURE)
-         * - GET 요청: 나이트스카웃 서버가 CORS를 허용한다고 가정하고 초고속 직접 연결 (Direct Fetch)
-         * - POST 요청: 브라우저의 엄격한 보안 프로토콜(Preflight 차단)을 우회하기 위해 프록시 터널링(Proxy)
          * ==================================================================================
          */
          
-        /**
-         * 화면에 노출될 기초 혈당 데이터 배열을 수급받는 비동기(Async) 엔진입니다.
-         * * @param {number} hoursTarget - 조회할 시간 스팬 (3, 6, 24). 디폴트는 6입니다.
-         * @returns {Promise<void>} 
-         */
         async function loadData(hoursTarget) {
-            // 시간 파라미터가 명시적으로 들어오지 않으면 6으로 강제 조정
             let requestedHours = hoursTarget;
             if (requestedHours === undefined) {
                 requestedHours = 6;
             }
             
-            // 보안 점검: 대상 URL이 비정상적으로 짧거나 존재하지 않는다면 함수를 강제 종료합니다.
             if(cfg.url === undefined || cfg.url === null || cfg.url.length < 5) {
                 console.warn("[NETWORK] Aborting fetch request: Invalid URL provided.");
                 return;
             }
             
-            // UI를 '로딩 중' 상태로 전환하여 사용자에게 시스템이 작동하고 있음을 알립니다.
             let deltaDisplayElement = document.getElementById('deltaDisplay');
             deltaDisplayElement.innerText = "데이터 서버 통신 중... (Direct Mode)";
             deltaDisplayElement.className = "delta-text loading-text";
 
             try {
-                // 1. 순수 Direct 통신 로직 시작
                 let targetApiEndpoint = cfg.url + "/api/v1/entries.json?count=500";
                 console.log(`[NETWORK] Initiating GET request to: ${targetApiEndpoint}`);
                 
                 let fetchPromise = fetch(targetApiEndpoint, {
                     method: 'GET',
-                    cache: 'no-store' // 항상 가장 최신 데이터를 받기 위해 캐시를 사용하지 않습니다.
+                    cache: 'no-store' 
                 });
                 let responseObject = await fetchPromise;
                 
-                // HTTP 프로토콜 규격 상 200번대 응답이 아닌 경우 예외(Exception)를 인위적으로 투척합니다.
                 let isResponseValid = responseObject.ok;
                 if(isResponseValid === false) {
                     let errorMessage = `HTTP 통신 에러: 서버가 상태 코드 ${responseObject.status} 를 반환했습니다.`;
                     throw new Error(errorMessage);
                 }
                 
-                // 응답 본문 텍스트를 JSON 자료구조로 해석하는 비동기 작업을 수행합니다.
                 let jsonParsePromise = responseObject.json();
                 let parsedArrayData = await jsonParsePromise;
                 
-                // 반환받은 배열이 비어있는 쓰레기 데이터인지 검사합니다.
                 let isDataArrayValid = (parsedArrayData !== null && parsedArrayData !== undefined && parsedArrayData.length > 0);
                 
                 if(isDataArrayValid === true) {
-                    // 차트 시각화 엔진에서 써먹기 위해 전역 메모리 캐시에 이 배열을 백업합니다.
                     bgDataCache = parsedArrayData; 
                     
-                    // 나이트스카웃 API는 항상 최신순(내림차순)으로 데이터를 정렬하여 뱉습니다. 
-                    // 따라서 index 0이 무조건 가장 방금 측정된 최신 데이터입니다.
                     let absoluteLatestDataNode = parsedArrayData[0]; 
                     
-                    // index 1은 그보다 5분 전의 과거 데이터입니다. 툴팁의 편의성을 위해 확보합니다.
                     let previousDataNodeExists = (parsedArrayData[1] !== undefined);
                     let previousSgvValueExtraction = previousDataNodeExists ? parsedArrayData[1].sgv : '기록 없음'; 
                     
-                    // 메모리 업데이트
                     currentRealTimeBg = absoluteLatestDataNode.sgv;
                     
-                    // [화면 렌더링 1단계: 순수 혈당 수치 출력 및 색상 매핑]
+                    // [화면 렌더링 1단계]
                     let mainBgDisplayElement = document.getElementById('bgDisplay');
                     mainBgDisplayElement.innerText = absoluteLatestDataNode.sgv;
                     
                     let computedColorHex = getBgColor(absoluteLatestDataNode.sgv);
                     mainBgDisplayElement.style.color = computedColorHex;
                     
-                    // [화면 렌더링 2단계: 영어 방향 코드를 유니코드 화살표로 치환하여 출력]
+                    // [화면 렌더링 2단계]
                     let rawDirectionString = absoluteLatestDataNode.direction;
                     let translatedArrowSymbolString = getArrowSymbol(rawDirectionString);
                     
                     let mainArrowDisplayElement = document.getElementById('arrowDisplay');
                     mainArrowDisplayElement.innerText = translatedArrowSymbolString;
-                    mainArrowDisplayElement.style.color = computedColorHex; // 숫자와 동일한 색상 테마 공유
+                    mainArrowDisplayElement.style.color = computedColorHex; 
                     
-                    // [화면 렌더링 3단계: 말풍선(Tooltip)에 직전 과거 데이터 은닉 삽입]
+                    // [화면 렌더링 3단계]
                     let formattedPreviousTimeString = "";
                     if (previousDataNodeExists === true) {
                         let rawDateString = parsedArrayData[1].dateString;
@@ -1852,52 +1787,44 @@
                     let assembledTooltipText = `직전 측정: ${previousSgvValueExtraction} mg/dL (${formattedPreviousTimeString})`;
                     tooltipTargetElement.title = assembledTooltipText;
                     
-                    // Bootstrap JavaScript API를 직접 건드려 해당 돔 요소의 툴팁 플러그인을 활성화시킵니다.
-                    let allTooltipTriggersNodeList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-                    let allTooltipTriggersArray = [].slice.call(allTooltipTriggersNodeList);
+                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                    let allTooltipTriggersArray = tooltipTriggerList;
                     
                     allTooltipTriggersArray.map(function (tooltipDomElement) {
                         return new bootstrap.Tooltip(tooltipDomElement);
                     });
                     
-                    // [논리 연산 1단계: 센서 데이터 수명의 신선도 유효성 검증 체계 (Stale Detection)]
+                    // [논리 연산 1단계]
                     let latestMeasurementRawDate = absoluteLatestDataNode.dateString;
                     let latestMeasurementMomentObj = moment(latestMeasurementRawDate);
                     
                     let systemCurrentTimeMomentObj = moment();
                     
-                    // 현재 시각으로부터 마지막 측정 시각을 빼서 분(Minutes) 단위의 절대적 격차를 산출합니다.
                     let minutesDifferenceValue = systemCurrentTimeMomentObj.diff(latestMeasurementMomentObj, 'minutes');
                     
                     let isSensorStale = (minutesDifferenceValue > 15);
                     
                     if(isSensorStale === true) {
-                        // 15분 초과: 센서 교체 시기, 웜업, 또는 블루투스 통신 단절을 의미함. 위험 상태 렌더링.
                         deltaDisplayElement.className = "delta-text stale-warning";
                         let warningHtmlText = `⚠️ 통신 또는 센서 끊김 감지 (${minutesDifferenceValue}분 지연됨)`;
                         deltaDisplayElement.innerHTML = warningHtmlText;
                     } else {
-                        // 15분 이내: 건강한 정상 데이터 흐름. 일반 텍스트 렌더링.
                         deltaDisplayElement.className = "delta-text";
                         let relativeTimeText = latestMeasurementMomentObj.fromNow();
                         let normalHtmlText = relativeTimeText + " 측정 완료";
                         deltaDisplayElement.innerText = normalHtmlText;
                     }
                     
-                    // 통신에 완벽히 성공했으므로, 이전에 떠있을지도 모르는 에러 알림창을 완전 제거합니다.
                     let errorStatusBoxElement = document.getElementById('statusMsg');
                     errorStatusBoxElement.style.display = 'none';
                     
                     console.log("[NETWORK] GET Entries sequence successfully completed. Handing over to Treatments.");
                     
-                    // 혈당 로드 사이클이 무사히 끝났으므로, 차트 위에 오버레이 할 처치(Treatment) 내역을 병렬로 불러옵니다.
                     loadTreatmentsAndDrawChart(requestedHours);
                 }
             } catch(errorReference) {
-                // Try 블록 내에서 튀어나온 모든 에러(주소 오타, 네트워크 단절, CORS 거부 등)를 이 Catch 블록이 낚아챕니다.
                 console.error("[NETWORK ERROR] GET Entries fetch completely failed. Stack trace: ", errorReference);
                 
-                // UI 상의 모든 정상 출력물들을 무효화(Nullify) 시킵니다.
                 let mainBgDisplayElement = document.getElementById('bgDisplay');
                 mainBgDisplayElement.innerText = "---";
                 
@@ -1908,7 +1835,6 @@
                 deltaDisplayElement.innerText = "서버 통신 실패 상태";
                 deltaDisplayElement.className = "delta-text";
                 
-                // 경고 창을 시각적으로 띄우고 진단 정보를 출력합니다.
                 let errorStatusBoxElement = document.getElementById('statusMsg');
                 errorStatusBoxElement.style.display = 'block';
                 
@@ -1921,11 +1847,6 @@
             }
         }
 
-        /**
-         * 혈당 그래프 위에 식사, 인슐린 투여 기록을 아이콘으로 렌더링하기 위해
-         * 백엔드에서 Treatments 콜렉션 데이터를 수신합니다.
-         * * @param {number} hoursTarget - 캔버스 X축 시간 기준 (차트 함수에 토스할 용도)
-         */
         async function loadTreatmentsAndDrawChart(hoursTarget) {
             try {
                 let targetApiEndpoint = cfg.url + "/api/v1/treatments.json?count=50";
@@ -1944,14 +1865,11 @@
                 
                 console.log("[NETWORK] Treatments fetched successfully. Pushing to Canvas Engine.");
                 
-                // 수신에 성공하면 파싱된 처치 배열을 함께 차트 함수로 던집니다.
                 drawChart(hoursTarget, parsedTreatmentsArray);
                 
             } catch(errorReference) {
-                // 처치 데이터를 받아오는 것에 실패하더라도 앱 전체가 먹통이 되면 안 됩니다. (Graceful Degradation 설계)
                 console.warn("[NETWORK WARNING] Treatment fetch bypassed due to error. Chart will render without annotation icons.", errorReference);
                 
-                // 처치 배열 자리에 빈 껍데기 배열([])을 넣어서 차트 선형 그리기만이라도 살려냅니다.
                 let emptyFallbackArray = [];
                 drawChart(hoursTarget, emptyFallbackArray); 
             }
@@ -1963,39 +1881,26 @@
          * ==================================================================================
          */
          
-        /**
-         * 메모리에 캐싱된 혈당 데이터 포인트들을 캔버스에 X, Y 좌표축을 기준으로 점과 선으로 이어 그립니다.
-         * 동시에 Treatments 배열을 분석하여 특정 시간대 X축 밑바닥에 Annotation 객체(이모지 아이콘)를 주입합니다.
-         * * @param {number} hoursTarget - 화면에 보여줄 시간 스팬 (3, 6, 24)
-         * @param {Array} treatmentsArray - 아이콘으로 컨버팅 될 원시 객체들의 집합
-         */
         function drawChart(hoursTarget, treatmentsArray) {
-            // 그릴 재료(혈당 캐시 배열)가 아예 존재하지 않는다면 함수 헛돌기를 방지하고 종료합니다.
             let isCacheEmpty = (bgDataCache === null || bgDataCache.length === 0);
             if(isCacheEmpty === true) {
                 console.log("[RENDER ENGINE] Abort drawing: Blood glucose cache is empty.");
                 return;
             }
             
-            // HTML 내부에 파묻혀있는 <canvas> DOM 엘리먼트를 스크래핑 합니다.
             let canvasDomElement = document.getElementById('bgChart');
-            
-            // 캔버스 객체로부터 선이나 도형을 그릴 수 있는 2차원(2D) 붓(Context)을 대여받습니다.
             let canvasRenderingContext2D = canvasDomElement.getContext('2d');
             
-            // 그래프의 가장 좌측(과거) 끝점이 되어야 할 한계선 시간을 밀리초(ms) 단위로 구합니다.
             let systemCurrentTimeMomentObj = moment();
             let subtractedTimeMomentObj = systemCurrentTimeMomentObj.subtract(hoursTarget, 'hours');
             let absoluteCutoffTimeMs = subtractedTimeMomentObj.valueOf();
             
-            // 캐시 배열 전체를 루프 돌리며 Cutoff 한계선보다 미래에 존재하는 유효 데이터만 필터(Filter)망으로 걸러냅니다.
             let filteredArray = bgDataCache.filter(function(entryObject) {
                 let entryTimeMs = moment(entryObject.dateString).valueOf();
                 let isEntryValid = (entryTimeMs > absoluteCutoffTimeMs);
                 return isEntryValid;
             });
             
-            // 필터링된 배열을 Chart.js가 인식할 수 있는 {x: Date, y: Number} 형태의 객체 구조로 리매핑(Map)합니다.
             let mappedDataPointsArray = filteredArray.map(function(entryObject) {
                 let mappedObject = {
                     x: moment(entryObject.dateString).toDate(), 
@@ -2004,29 +1909,21 @@
                 return mappedObject;
             });
             
-            // 배열의 순서를 완전히 뒤집습니다(Reverse). 나이트스카웃은 최신 데이터가 배열 앞쪽에 오지만,
-            // 캔버스 차트는 과거(왼쪽)에서 미래(오른쪽)로 선을 그어나가기 때문입니다.
             let finalizedChartDataPoints = mappedDataPointsArray.reverse(); 
             
-            // Chart.js 플러그인(Annotation)에게 전달할 아이콘 설정 객체들을 담을 빈 배열을 엽니다.
             let generatedAnnotationsArray = [];
             
-            // 파라미터로 건네받은 Treatments 배열을 하나하나 까보며 아이콘 부착 여부를 심사합니다.
             let totalTreatmentsCount = treatmentsArray.length;
             for(let idx = 0; idx < totalTreatmentsCount; idx++) {
                 let currentTreatmentObject = treatmentsArray[idx];
                 let treatmentRawTimeString = currentTreatmentObject.created_at;
                 let treatmentTimeMs = moment(treatmentRawTimeString).valueOf();
                 
-                // 이 처치 기록이 그래프에 그려질 범위 내에 실제로 존재하는지 시간 검증을 거칩니다.
                 let isTreatmentInChartRange = (treatmentTimeMs > absoluteCutoffTimeMs);
                 
                 if(isTreatmentInChartRange === true) {
-                    // 기본 아이콘의 정체성은 인슐린 주사기로 규정합니다.
                     let decidedDisplayIconString = "💉"; 
                     
-                    // 만약 해당 처치 객체 안에 탄수화물(Carbs) 수치가 명시되어 있고, 그 값이 0보다 크다면
-                    // 이것은 단순한 인슐린 투여가 아니라 '식사' 행위로 규정하고 밥그릇 아이콘으로 돌변시킵니다.
                     let carbsValueProperty = currentTreatmentObject.carbs;
                     if(carbsValueProperty !== undefined && carbsValueProperty !== null) {
                         let parsedCarbsFloat = parseFloat(carbsValueProperty);
@@ -2035,13 +1932,12 @@
                         }
                     }
                     
-                    // 어노테이션 플러그인 버전 0.5.7이 요구하는 엄격한 프로퍼티 구조체(Schema)를 제작합니다.
                     let annotationSchemaObject = {
                         type: 'text',
                         mode: 'vertical',
                         scaleID: 'x-axis-0', 
                         value: moment(treatmentRawTimeString).toDate(), 
-                        yValue: 50, // Y축의 50 지점은 거의 바닥권이므로 차트 선과 겹치는 것을 최소화함
+                        yValue: 50, 
                         content: decidedDisplayIconString, 
                         fontSize: 22,
                         fontStyle: 'normal',
@@ -2049,61 +1945,53 @@
                         position: 'center'
                     };
                     
-                    // 완성된 스키마 객체를 배열에 밀어넣습니다.
                     generatedAnnotationsArray.push(annotationSchemaObject);
                 }
             }
 
-            // 기존 화면에 띄워져 있는 차트 인스턴스가 존재한다면 파괴(Destroy) 메서드를 명시적으로 호출합니다.
-            // 이 작업을 생략하면 마우스를 올릴 때마다 예전 차트와 겹쳐서 깜빡이는 렌더링 글리치(Glitch)가 일어납니다.
             let isChartInstanceAlreadyExisting = (chartInstance !== null);
             if (isChartInstanceAlreadyExisting === true) {
                 console.log("[RENDER ENGINE] Destroying previous Chart instance to prevent memory leaks.");
                 chartInstance.destroy();
             }
             
-            // 붓을 이용해 캔버스의 좌표 (0, 0) 지점에서 Y축 (0, 300) 지점을 향해 내려가는 그라데이션 선분을 창조합니다.
             let customGradientStroke = canvasRenderingContext2D.createLinearGradient(0, 0, 0, 300); 
             
-            // 0.0 비율 (가장 꼭대기: 250~300 수치 부근) 에는 위험을 나타내는 붉은색 물감을 칠합니다.
             customGradientStroke.addColorStop(0.0, '#ff4444'); 
-            // 0.3 비율 (중간 위: 180~200 수치 부근) 에는 경고를 나타내는 노란색 물감을 칠합니다.
             customGradientStroke.addColorStop(0.3, '#ffd700'); 
-            // 0.6 비율 (그 이하 전체 바닥: 180 이하 정상 범위) 에는 안정적인 초록색 물감을 칠합니다.
             customGradientStroke.addColorStop(0.6, '#00ff00'); 
             
-            // Chart.js 글로벌 라이브러리를 동원하여 새로운 차트 인스턴스를 메모리 상에 구축합니다.
             console.log("[RENDER ENGINE] Instantiating new Chart.js Object.");
             chartInstance = new Chart(canvasRenderingContext2D, {
-                type: 'line', // 데이터 사이를 연결하는 라인 차트 모드 명시
+                type: 'line', 
                 data: { 
                     datasets: [{ 
                         label: '혈당 수치 트래킹 데이터',
                         data: finalizedChartDataPoints, 
                         borderColor: customGradientStroke, 
                         borderWidth: 3,              
-                        pointRadius: 0, // 미관을 위해 점(동그라미)은 0크기로 투명화              
-                        pointHitRadius: 10, // 단, 사용자가 모바일에서 터치했을 때 인식되는 범위는 10픽셀로 관대하게 넓힘          
-                        fill: false // 선 밑으로 색칠되는 영역을 무효화                  
+                        pointRadius: 0,              
+                        pointHitRadius: 10,          
+                        fill: false                  
                     }] 
                 },
                 options: { 
-                    responsive: true, // 브라우저 창 크기가 변할 때 캔버스도 즉각 반응하여 변형됨
-                    maintainAspectRatio: false, // CSS에서 부여한 height: 380px 속성을 강제로 무시하지 않도록 지시
+                    responsive: true, 
+                    maintainAspectRatio: false, 
                     legend: { 
-                        display: false // 라인 1개짜리 차트이므로 범례 박스가 화면을 차지하는 것을 차단
+                        display: false 
                     },
                     tooltips: { 
                         mode: 'index', 
-                        intersect: false // 정확히 선 위에 마우스를 올리지 않고, X축 근처 수직 선상에만 가도 툴팁이 활성화됨
+                        intersect: false 
                     },
                     scales: { 
                         xAxes: [{ 
                             id: 'x-axis-0',
-                            type: 'time', // X축의 데이터 성질이 숫자가 아니라 '시간 흐름'임을 엔진에 고지
+                            type: 'time', 
                             time: { 
                                 unit: 'hour', 
-                                displayFormats: { hour: 'HH:mm' } // 눈금자에 표시될 시간 텍스트 형식 지시
+                                displayFormats: { hour: 'HH:mm' } 
                             },
                             gridLines: { 
                                 color: '#333333', 
@@ -2111,7 +1999,7 @@
                             }, 
                             ticks: { 
                                 fontColor: '#888888', 
-                                maxTicksLimit: 6 // 모바일 화면에서 글자가 겹치지 않게 최대 눈금 개수를 6개로 억제
+                                maxTicksLimit: 6 
                             } 
                         }], 
                         yAxes: [{ 
@@ -2121,14 +2009,13 @@
                             }, 
                             ticks: { 
                                 fontColor: '#888888', 
-                                stepSize: 50, // 50, 100, 150 단위로 눈금을 자름
-                                suggestedMin: 40, // 뷰포트 Y축 바닥의 권장 최저점을 40으로 내림
-                                suggestedMax: 300 // 뷰포트 Y축 천장의 권장 최고점을 300으로 올림
+                                stepSize: 50, 
+                                suggestedMin: 40, 
+                                suggestedMax: 300 
                             } 
                         }] 
                     },
                     annotation: { 
-                        // 사전에 정교하게 조립해둔 아이콘 속성 배열을 플러그인 코어에 주입
                         annotations: generatedAnnotationsArray 
                     }
                 }
@@ -2141,13 +2028,9 @@
          * ==================================================================================
          */
          
-        /**
-         * 화면 하단에 둥근 알약 모양으로 나열된 빠른 단축키 버튼 목록을 DOM에 동적으로 구워냅니다.
-         */
         function initFavButtons() {
             let scrollingContainerElement = document.getElementById('favContainer');
             
-            // 개발자가 지정한 고정된 형태의 즐겨찾기 배열 (n: Name, c: Carbs)
             let hardcodedFavoritesArray = [
                 {n: '백반 세트', c: 70}, 
                 {n: '라면 1봉지', c: 85}, 
@@ -2166,7 +2049,6 @@
                 let itemNameString = currentFavObject.n;
                 let itemCarbsNumber = currentFavObject.c;
                 
-                // 클릭 시 quickFill() 함수에 파라미터를 담아 발동하는 HTML 덩어리를 덧붙입니다.
                 let buttonHtmlString = `<div class="fav-btn" onclick="quickFill('${itemNameString}', ${itemCarbsNumber})">${itemNameString}(${itemCarbsNumber}g)</div>`;
                 accumulatedHtmlBufferString = accumulatedHtmlBufferString + buttonHtmlString;
             }
@@ -2174,44 +2056,28 @@
             scrollingContainerElement.innerHTML = accumulatedHtmlBufferString;
         }
 
-        /**
-         * 단축 버튼이 터치되었을 때 모달창을 자동으로 열어주고, 입력 필드를 거치지 않고
-         * 다이렉트로 식판(Meals) 배열에 객체를 쑤셔넣는 매크로 함수입니다.
-         * * @param {string} incomingName - 입력될 음식의 명칭
-         * @param {number} incomingCarbsAmount - 지정된 순수 탄수화물 중량
-         */
         function quickFill(incomingName, incomingCarbsAmount) {
             console.log(`[ACTION] Quick Fill Macro triggered for: ${incomingName}`);
             
-            // 1. 모달 개방 함수 선행 호출
             openEntryModal();
             
-            // 2. 모달이 아래에서 위로 스르륵 올라오는 부트스트랩 CSS 애니메이션(약 0.2~0.3초)이 
-            // 완료되기 전에 DOM을 조작하면 화면이 버벅일 수 있으므로, 자바스크립트의 setTimeout을 이용해 
-            // 300밀리초 뒤에 로직을 비동기로 지연 실행시킵니다.
             setTimeout(function() { 
                 let newMealObject = {
                     n: incomingName, 
-                    w: 0, // 단축키는 무게를 계산하지 않으므로 0으로 바인딩
+                    w: 0, 
                     c: incomingCarbsAmount
                 };
                 meals.push(newMealObject); 
-                updateList(); // 변경된 배열 상태를 UI 리스트에 즉시 반영
+                updateList(); 
             }, 300);
         }
 
-        /**
-         * '식판 기록' 카드 버튼을 누르면 발동하는 중앙 허브(Hub) 함수입니다.
-         * 모달 창 내부의 찌꺼기 데이터들을 완벽히 세탁하고 초기 폼(Form) 상태를 설정합니다.
-         */
         function openEntryModal() {
             console.log("[ACTION] Entry Modal initialization sequence started.");
             
-            // 1. 배열의 길이를 0으로 만들어 기존 식판을 완전히 부숴버립니다.
             meals = []; 
             updateList();
             
-            // 2. 입력 폼 태그 내부의 value 들을 싹쓸이 클리어합니다.
             let timeInputDom = document.getElementById('entryTime');
             let currentMomentObject = moment();
             let isoFormattedTimeString = currentMomentObject.format('YYYY-MM-DDTHH:mm');
@@ -2223,7 +2089,6 @@
             document.getElementById('bolus').value = ""; 
             document.getElementById('basal').value = "";
             
-            // 3. 백그라운드에 떠있는 현재 혈당 캐시를 끌어와 모달 내부의 수동 입력 필드에 초기값으로 주입합니다.
             let backgroundCurrentBgVal = currentRealTimeBg;
             let modalCurrentBgInputDom = document.getElementById('modalCurrentBg');
             
@@ -2235,16 +2100,11 @@
                 modalCurrentBgInputDom.value = "";
             }
             
-            // 4. 모든 청소 작업이 끝난 깨끗한 모달을 시각적으로 팝업시킵니다.
             let modalDomElement = document.getElementById('entryModal');
             let modalInstance = new bootstrap.Modal(modalDomElement);
             modalInstance.show();
         }
 
-        /**
-         * 사용자가 모달 창 맨 위에서 '과거 시간'으로 날짜/시간 인풋을 수정했을 때
-         * 해당 시점에 존재했던 혈당값을 서버 데이터베이스에서 추출해오는 타임머신 역추적 로직입니다.
-         */
         async function updateBgForSelectedTime() {
             let userSelectedTimeString = document.getElementById('entryTime').value;
             let isUserTimeEmpty = (userSelectedTimeString === "" || userSelectedTimeString === null);
@@ -2258,12 +2118,9 @@
             statusLabelElement.innerText = "서버 딥서치 수행 중 (Loading)...";
             
             try {
-                // 부트스트랩 기본 datetime-local 텍스트를 글로벌 ISO-8601 포맷으로 정제합니다.
                 let searchMomentObject = moment(userSelectedTimeString);
                 let findDateIsoFormatted = searchMomentObject.toISOString();
                 
-                // MongoDB 쿼리 문법: $lte 연산자를 사용하여 사용자가 선택한 시간과 
-                // '가장 가까우면서 작거나 같은(과거)' 데이터 딱 1건(count=1)만 추출합니다.
                 let deepSearchEndpointUrl = cfg.url + "/api/v1/entries.json?find[dateString][$lte]=" + findDateIsoFormatted + "&count=1";
                 
                 let fetchPromise = fetch(deepSearchEndpointUrl);
@@ -2292,14 +2149,10 @@
             }
         }
 
-        /**
-         * '음식 카테고리(Select Box)'를 사용자가 마우스나 손가락으로 골랐을 때 트리거되는 액션입니다.
-         */
         function onPresetChange() {
             let selectBoxElement = document.getElementById('foodPreset');
             let selectedOptionValue = selectBoxElement.value;
             
-            // 맨 위에 있는 'custom(직접입력)' 옵션이 아니라면, 선택한 텍스트를 이름 칸에 자동으로 쳐줍니다.
             let isCustomMode = (selectedOptionValue === 'custom');
             if(isCustomMode === false) {
                 let selectedOptionIndex = selectBoxElement.selectedIndex;
@@ -2309,14 +2162,9 @@
                 foodNameInputElement.value = selectedOptionText;
             }
             
-            // 비율 계수가 변경되었으므로 즉각적인 산술 연산을 다시 명령합니다.
             calculateCarbs();
         }
 
-        /**
-         * 무게(Weight) 폼에 사용자가 숫자를 키보드로 입력할 때마다 실시간(oninput)으로 트리거되어
-         * 단가표 배열의 비율과 곱셈 연산을 수행하는 산술 코어 함수입니다.
-         */
         function calculateCarbs() {
             let selectBoxElement = document.getElementById('foodPreset');
             let currentRatioString = selectBoxElement.value;
@@ -2326,7 +2174,6 @@
             let currentWeightString = weightInputElement.value;
             let weightFloatingNumber = parseFloat(currentWeightString);
             
-            // 아무 것도 입력하지 않은 백스페이스 상태라면 0으로 치환합니다.
             let isWeightValidNumber = (isNaN(weightFloatingNumber) === false);
             if (isWeightValidNumber === false) {
                 weightFloatingNumber = 0;
@@ -2335,7 +2182,6 @@
             let isRatioValidNumber = (isNaN(ratioFloatingNumber) === false);
             let isWeightGreaterThanZero = (weightFloatingNumber > 0);
             
-            // 두 조건이 모두 충족될 때만 곱셈을 발동합니다.
             if (isRatioValidNumber === true && isWeightGreaterThanZero === true) {
                 let multipliedRawValue = weightFloatingNumber * ratioFloatingNumber;
                 let roundedFinalInteger = Math.round(multipliedRawValue);
@@ -2345,15 +2191,10 @@
             }
         }
 
-        /**
-         * 사용자가 파란색 '+ 식판 배열에 이 음식 추가하기' 버튼을 눌렀을 때 발동하며,
-         * 폼 데이터를 객체(Object) 덩어리로 캐스팅하여 meals 전역 배열 뒤로 밀어넣습니다.
-         */
         function addFood() {
             let nameInputDom = document.getElementById('foodName');
             let extractedNameString = nameInputDom.value;
             
-            // 이름이 비어있다면 가상의 임시 텍스트를 부여합니다.
             if (extractedNameString === "" || extractedNameString === null) {
                 extractedNameString = "이름이 지정되지 않은 음식";
             }
@@ -2370,7 +2211,6 @@
                 extractedCarbsFloat = 0;
             }
             
-            // 탄수화물 값이 0초과이거나 무게가 0초과인 경우에만 유효한 엔티티로 판단합니다.
             let isCarbsValid = (extractedCarbsFloat > 0);
             let isWeightValid = (extractedWeightFloat > 0);
             
@@ -2383,26 +2223,18 @@
                 
                 meals.push(entityObjectToPush); 
                 
-                // 식판에 변동이 생겼으므로 UI 컴포넌트를 파괴 후 재창조 지시
                 updateList();
                 
-                // 연속적인 타건 입력을 돕기 위해 숫자 필드 두 개를 빗자루로 쓸어냅니다.
                 weightInputDom.value = ""; 
                 carbsInputDom.value = ""; 
                 
-                // 사용자의 커서(Focus)를 자동으로 다시 음식 이름 필드로 옮겨주어 모바일 키보드가 계속 떠있게 돕습니다.
                 nameInputDom.focus(); 
             }
         }
 
-        /**
-         * Meals 배열을 순회하며 HTML <ul> 내부의 <li> 목록으로 구워내고,
-         * 누적된 탄수화물을 시간에 따른 인탄비(ICR)로 나누어 필요 인슐린 양을 추천합니다.
-         */
         function updateList() {
             let ulContainerDomNode = document.getElementById('foodList'); 
             
-            // 메모리에 그릴 공간의 도화지를 완전히 흰색으로 지웁니다.
             ulContainerDomNode.innerHTML = ''; 
             
             let accumulatedTotalCarbsInteger = 0; 
@@ -2411,7 +2243,6 @@
             for(let indexCursor = 0; indexCursor < totalMealsCountInArray; indexCursor++) {
                 let currentIteratedMealObj = meals[indexCursor];
                 
-                // 전체 누적 탄수화물 변수에 현재 객체의 탄수화물을 가산(Addition)합니다.
                 accumulatedTotalCarbsInteger = accumulatedTotalCarbsInteger + currentIteratedMealObj.c;
                 
                 let weightDisplayLogicStr = "-";
@@ -2419,7 +2250,6 @@
                     weightDisplayLogicStr = currentIteratedMealObj.w + "g";
                 }
                 
-                // 삭제 버튼의 onClick 구문에 현재 배열 인덱스 번호를 하드코딩하여 엮어줍니다.
                 let listItemHtmlBlock = `
                     <li class="list-group-item d-flex justify-content-between align-items-center p-2 custom-list-item">
                         <span>
@@ -2435,15 +2265,12 @@
                 ulContainerDomNode.innerHTML = ulContainerDomNode.innerHTML + listItemHtmlBlock;
             }
             
-            // 화면 상단의 요약 보드에 총 가산된 탄수화물을 프린트합니다.
             let totalCarbsHighlightDom = document.getElementById('totalCarbs');
             totalCarbsHighlightDom.innerText = accumulatedTotalCarbsInteger;
             
-            // --- [스마트 인탄비(ICR) 배정 엔진] ---
             let systemCurrentDateObj = new Date();
-            let currentHourInteger = systemCurrentDateObj.getHours(); // 0 ~ 23 사이의 정수 반환
+            let currentHourInteger = systemCurrentDateObj.getHours(); 
             
-            // 1차적으로 저녁 시간대 (17시 ~ 익일 05시 사이)의 비율 계수를 기본값으로 할당합니다.
             let dynamicallyAssignedIcrRatio = cfg.d; 
             
             let isMorningTimeSlot = (currentHourInteger >= 5 && currentHourInteger < 11);
@@ -2455,13 +2282,11 @@
                 dynamicallyAssignedIcrRatio = cfg.l; 
             }
             
-            // --- [Divide By Zero 방지 및 소수점 포맷팅 엔진] ---
             let finalSuggestedInsulinText = "0.0";
             let isRatioSafeToDivide = (dynamicallyAssignedIcrRatio > 0);
             
             if (isRatioSafeToDivide === true) {
                 let pureMathematicalResult = accumulatedTotalCarbsInteger / dynamicallyAssignedIcrRatio;
-                // 자바스크립트의 .toFixed() 메서드를 활용해 부동소수점 첫째자리까지만 반올림 스트링으로 캐스팅합니다.
                 finalSuggestedInsulinText = pureMathematicalResult.toFixed(1);
             }
             
@@ -2469,10 +2294,6 @@
             suggestionHighlightDom.innerText = finalSuggestedInsulinText;
         }
 
-        /**
-         * 사용자가 빨간색 'X' 버튼을 탭했을 때 발동하여 특정 배열 요소를 폭파시킵니다.
-         * @param {number} targetIndexPointer - 파괴 대상 인덱스 번호
-         */
         function removeMeal(targetIndexPointer) { 
             console.log(`[ACTION] Dropping item at index ${targetIndexPointer} from tray array.`);
             meals.splice(targetIndexPointer, 1); 
@@ -2482,22 +2303,17 @@
         /**
          * ==================================================================================
          * [PART H] 데이터 쓰기 통신 엔진 (POST Method Network Pipeline - CORS BYPASS PROXY)
-         * - 중요: 읽기(GET)는 직통으로 뚫어 속도를 확보했지만, 쓰기(POST)는 브라우저가 Preflight OPTIONS
-         * 요청을 보내면서 보안 헤더(API-SECRET)를 차단하는 치명적 락(Lock)이 걸리기 쉽습니다.
-         * - 따라서, 오직 데이터를 전송하는 이 순간에만 corsproxy.io 우회 터널을 거쳐 벽을 뚫고 들어갑니다.
          * ==================================================================================
          */
         async function submitData() {
             console.log("[NETWORK] Preparing POST Payload for Treatments injection.");
             
-            // 1. 보안 인증키 누락 검증 (인증키가 없으면 애초에 서버가 401 Unauthorized를 뱉습니다.)
             let isSecurityKeyMissing = (cfg.sec === undefined || cfg.sec === null || cfg.sec === "");
             if(isSecurityKeyMissing === true) {
                 alert("보안 오류: 시스템 설정 메뉴(⚙️)에서 API SECRET(서버 비밀번호)을 먼저 기입하셔야 데이터 쓰기 작업이 인가됩니다.");
                 return;
             }
             
-            // 2. DOM에서 사용자 결정 수치들을 긁어모읍니다 (Scraping).
             let modalBgStringValue = document.getElementById('modalCurrentBg').value;
             
             let basalInputString = document.getElementById('basal').value;
@@ -2506,15 +2322,11 @@
             let bolusInputString = document.getElementById('bolus').value;
             let bolusParsedFloat = parseFloat(bolusInputString);
             
-            // 빈칸이거나 NaN이면 null로 변환하여 나이트스카웃 DB에 쓰레기값이 안 들어가게 막습니다.
             let finalBolusValueToPush = isNaN(bolusParsedFloat) ? null : bolusParsedFloat; 
             
             let totalCarbsStringValue = document.getElementById('totalCarbs').innerText;
             let totalCarbsParsedFloat = parseFloat(totalCarbsStringValue);
             
-            // 3. 메모 문자열(Notes Field) 병합 및 가공 알고리즘
-            // Nightscout 스키마 상 식전 혈당이나 기저 인슐린 전용 컬럼이 존재하지 않으므로, 
-            // Notes(메모) 컬럼에 특수 포맷 텍스트로 합쳐서 강제로 때려 넣습니다.
             let memoArrayBuffer = [];
             
             let isModalBgValidNumber = (modalBgStringValue !== "" && isNaN(modalBgStringValue) === false);
@@ -2527,10 +2339,8 @@
                 memoArrayBuffer.push(`기저:${basalParsedFloat}U`);
             }
             
-            // join 메서드로 콤마와 띄어쓰기를 곁들여 하나의 단일 문자열로 융합합니다.
             let perfectlyMergedNotesString = memoArrayBuffer.join(', '); 
             
-            // 4. 식판 배열에 담겨있는 텍스트 이름들을 뽑아내어 하나로 이어붙입니다.
             let mappedFoodNamesArray = meals.map(function(mObj) {
                 return mObj.n;
             });
@@ -2544,7 +2354,6 @@
             let momentTimeObjectToPush = moment(timeInputString);
             let finalIsoCreatedTimeString = momentTimeObjectToPush.toISOString();
             
-            // 5. 나이트스카웃 서버의 API 스키마 규격에 한 치의 오차도 없이 맞춘 JSON 페이로드 객체(Payload Object) 조립
             let masterPayloadObject = {
                 "enteredBy": "Roselina AI App System", 
                 "eventType": "Meal Bolus",
@@ -2556,10 +2365,8 @@
             };
             
             try {
-                // 6. 하이브리드 우회 파이프라인 구축 (POST Proxy Tunnelling)
                 let pureTargetApiEndpointUrl = cfg.url + "/api/v1/treatments";
                 
-                // 내 원래 타겟 주소를 URI 형태로 안전하게 인코딩한 뒤, 프록시 대문 뒤에 이어붙입니다.
                 let encodedTargetUrlString = encodeURIComponent(pureTargetApiEndpointUrl);
                 let proxyTunnelEndpointUrl = "https://corsproxy.io/?" + encodedTargetUrlString;
                 
@@ -2569,11 +2376,9 @@
                     method: 'POST', 
                     headers: { 
                         'Content-Type': 'application/json', 
-                        // 평문 비밀번호를 SHA-1 해시 함수에 집어넣어 암호화된 40자리 해시 문자열을 생성하여 던집니다.
                         'API-SECRET': sha1(cfg.sec) 
                     },
                     body: JSON.stringify(masterPayloadObject),
-                    // 레퍼러 정책을 no-referrer 로 설정하여 내가 깃허브에서 왔다는 출처의 꼬리표를 강제로 끊어버립니다.
                     referrerPolicy: 'no-referrer' 
                 });
                 
@@ -2588,7 +2393,6 @@
                     let activeEntryModalInstance = bootstrap.Modal.getInstance(activeEntryModalElement);
                     activeEntryModalInstance.hide(); 
                     
-                    // 새 기록이 들어갔으니 차트 위에 밥그릇 아이콘이 생기도록 백그라운드 데이터 갱신을 지시합니다.
                     loadData(6); 
                 } else { 
                     let errorStatusCodeNumber = responseResultObject.status;
@@ -2606,10 +2410,6 @@
          * ==================================================================================
          */
          
-        /**
-         * 돋보기(히스토리) 카드를 터치할 때 모달을 열어줌과 동시에,
-         * 사용자에게 보여줄 데이터가 즉시 뜰 수 있도록 0번 검색어(전체 검색) 매크로를 발사합니다.
-         */
         function openHistoryModal() { 
             console.log("[ACTION] History Search Engine Modal spawned.");
             let historyModalDomNode = document.getElementById('historyModal');
@@ -2619,18 +2419,12 @@
             searchData(); 
         }
         
-        /**
-         * @function searchData
-         * @description 서버에서 최신순으로 1000개의 방대한 Treatments 데이터를 모조리 끌고 내려온 뒤,
-         * 클라이언트(브라우저 자바스크립트 엔진) 상에서 CPU 연산을 통해 문자열 필터링을 수행합니다.
-         */
         async function searchData() {
             let searchInputDomBox = document.getElementById('searchKey');
             let rawSearchInputValueString = searchInputDomBox.value;
             
             let normalizedKeywordString = "";
             if (rawSearchInputValueString !== null && rawSearchInputValueString !== undefined) {
-                // 사용자가 대문자로 입력해도 소문자로 강제 강등시켜 비교의 일관성을 확보합니다.
                 normalizedKeywordString = rawSearchInputValueString.trim().toLowerCase();
             }
             
@@ -2644,7 +2438,6 @@
             renderTargetContainerDom.innerHTML = loadingAnimationHtml;
             
             try {
-                // 히스토리 검색은 개인정보가 아니므로 우회 없이 Direct 파이프라인으로 초고속 1000개 수신
                 let massiveFetchEndpointUrl = cfg.url + "/api/v1/treatments.json?count=1000";
                 console.log(`[NETWORK] Firing MASSIVE fetch command to: ${massiveFetchEndpointUrl}`);
                 
@@ -2661,7 +2454,6 @@
                 
                 let isKeywordExisting = (normalizedKeywordString !== "");
                 
-                // 만약 사용자가 무언가 검색어를 입력했다면 Filter 엔진 가동
                 if(isKeywordExisting === true) {
                     let filteredDatabaseArray = masterDatabaseArray.filter(function(rowObject) {
                         
@@ -2673,14 +2465,12 @@
                         if (notesRawText === null || notesRawText === undefined) { notesRawText = ""; }
                         let notesLowerCaseText = notesRawText.toString().toLowerCase();
                         
-                        // 둘 중 어느 한 쪽의 문자열에라도 타겟 키워드가 일치하여 융합되어 있다면 True 생존 판정
                         let isReasonMatched = reasonLowerCaseText.includes(normalizedKeywordString);
                         let isNotesMatched = notesLowerCaseText.includes(normalizedKeywordString);
                         
                         return (isReasonMatched === true || isNotesMatched === true);
                     });
                     
-                    // 원본 배열을 필터링된 배열로 교체
                     masterDatabaseArray = filteredDatabaseArray;
                 }
                 
@@ -2694,22 +2484,19 @@
                             입력하신 지시어 <b>'${normalizedKeywordString}'</b>(와)과 부합하는 과거 데이터셋 노드가 존재하지 않습니다.
                         </div>`; 
                     renderTargetContainerDom.innerHTML = emptyResultHtml;
-                    return; // 함수 조기 종료
+                    return; 
                 }
                 
-                // 상단 통계 헤더 HTML 텍스트 블록
                 let compiledMassiveHtmlString = `
                     <div class="p-2 text-end text-secondary small border-bottom border-secondary mb-2 bg-dark">
                         총 <b>${totalMatchedRowsCount}</b>건의 데이터 스트림 노드가 탐색되었습니다.
                     </div>
                 `;
                 
-                // 배열 요소들을 순회하며 거대한 <div> 문자열 덩어리들로 찍어내어 합치는 Map->Join 파이프라인
                 let mappedHtmlArrayStrings = masterDatabaseArray.map(function(itemObj) {
                     let recordTimeRawString = itemObj.created_at;
                     let recordMomentObject = moment(recordTimeRawString);
                     
-                    // [핵심] 이 식사가 발생한 시점으로부터 +2시간 더 미래의 시점을 목표 시간(Target Time)으로 규정합니다.
                     let targetTwoHoursFutureMoment = recordMomentObject.clone().add(2, 'hours');
                     let targetTwoHoursFutureMsInt = targetTwoHoursFutureMoment.valueOf();
                     
@@ -2720,8 +2507,6 @@
                         notesRawValueStr = "";
                     }
                     
-                    // 정규식(Regular Expression) 머신: 
-                    // 문자열 무더기 속에서 "식전혈당:(숫자열)" 형태의 패턴을 스캐닝하여 오직 괄호 안의 (숫자열)만 추출합니다.
                     let regexPatternMachine = /식전혈당\s*[:=]\s*(\d+)/;
                     let matchedResultArrayBox = notesRawValueStr.match(regexPatternMachine);
                     
@@ -2729,7 +2514,6 @@
                         matchedResultArrayBox = [];
                     }
                     
-                    // 1번 인덱스가 순수 추출된 숫자입니다.
                     let extractedStartBgNumberText = matchedResultArrayBox[1];
                     
                     let startBgBadgeHtmlInject = "";
@@ -2737,8 +2521,6 @@
                         startBgBadgeHtmlInject = `<span class="badge bg-dark border border-warning text-warning me-1">식전 혈당: ${extractedStartBgNumberText}</span>`;
                     }
                     
-                    // UI에 보여질 일반 메모 란에는 식전혈당 글씨가 두 번 중복 출력되면 지저분하므로
-                    // 정규식을 활용해 원본 문자열에서 그 부분만 도려내어(Replace) 세탁합니다.
                     let regexReplaceMachine = /식전혈당\s*[:=]\s*\d+,?/;
                     let sanitizedNotesString = notesRawValueStr.replace(regexReplaceMachine, '').trim();
                     
@@ -2755,19 +2537,15 @@
                     
                     let formattedDisplayTimeStr = recordMomentObject.format('MM/DD HH:mm');
                     
-                    // 식사 시간 기준 +2시간이 지금 현재 시간보다 과거라면? 
-                    // -> 즉, 밥 먹은지 2시간이 이미 다 지났다면? -> 버튼을 누를 수 있게 활성화시켜 렌더링.
                     let isTargetTimeAlreadyPassed = (systemCurrentNowMsInt > targetTwoHoursFutureMsInt);
                     
                     let dynamicButtonHtmlInject = "";
                     if (isTargetTimeAlreadyPassed === true) {
                         dynamicButtonHtmlInject = `<button class="btn btn-sm btn-outline-info fw-bold px-3 shadow-sm" onclick="checkBg(${targetTwoHoursFutureMsInt}, this)">📉 이 식사의 '2시간 뒤 혈당' 역추적 시스템 가동</button>`;
                     } else {
-                        // 밥 먹은지 아직 2시간이 안 지났다면 비활성화 된 뱃지를 렌더링
                         dynamicButtonHtmlInject = `<span class="badge bg-dark border border-secondary text-secondary py-2 px-3">⏳ 센서 데이터 대기중 (위장관 소화 상태)</span>`;
                     }
                     
-                    // 완성된 단일 카드 컨테이너 HTML 블럭
                     let singleItemHtmlBlock = `
                     <div class="p-3 border-bottom border-secondary custom-list-item m-1">
                         <div class="d-flex justify-content-between mb-2">
@@ -2792,10 +2570,8 @@
                     return singleItemHtmlBlock;
                 });
                 
-                // Join: 쪼개진 1000개의 텍스트 덩어리를 빈틈없이 하나로 결합합니다.
                 let massiveJoinedHtmlString = mappedHtmlArrayStrings.join('');
                 
-                // 최종 결합 완성본을 본문 DOM 노드에 인젝션(Injection) 투척합니다.
                 compiledMassiveHtmlString = compiledMassiveHtmlString + massiveJoinedHtmlString;
                 renderTargetContainerDom.innerHTML = compiledMassiveHtmlString;
                 
@@ -2806,35 +2582,18 @@
             }
         }
 
-        /**
-         * @function checkBg
-         * @description [V43 핵심 방어 논리: 타겟 핀셋 추적 기법 (Precision Deep Trace)]
-         * 과거 로직의 "서버가 현재 혈당을 오발송하는 치명적 버그"를 영구적으로 근절시키기 위해,
-         * 타겟 시간을 기준으로 [앞으로 20분 ~ 뒤로 20분] 이라는 가상의 강철 박스를 생성합니다.
-         * 오직 이 박스 내부에 떨어지는 데이터 1건만 유효한 값으로 인정하고 수급해옵니다.
-         * * @param {number} targetTimestampMs - 식사 후 정확히 2시간 지점의 밀리초 타임스탬프
-         * @param {HTMLElement} btnDomElement - 클릭된 HTML 버튼 자기 자신의 노드 객체 (상태 변경용)
-         */
         async function checkBg(targetTimestampMs, btnDomElement) {
             console.log(`[ACTION] Deep Trace initiated for target timestamp: ${targetTimestampMs}`);
             
-            // 시각적 피드백 제공 및 사용자가 미친듯이 여러 번 연타하는 행위(DDoS)를 물리적으로 방지합니다.
             btnDomElement.innerText = "혈당 데이터 딥서치 엔진 가동 중... 📡";
             btnDomElement.disabled = true; 
             
             try {
-                // 목표 타임스탬프를 Moment 모듈 객체로 바인딩합니다.
                 let targetCenterTimeMomentObj = moment(targetTimestampMs);
                 
-                // 검색 허용 박스망 구축 (총 40분 폭의 구간)
-                // 하한선: 타겟 지점으로부터 20분 전으로 백스텝
                 let searchBoxFloorIsoStr = targetCenterTimeMomentObj.clone().subtract(20, 'minutes').toISOString();
-                
-                // 상한선: 타겟 지점으로부터 20분 후로 포워드
                 let searchBoxCeilIsoStr = targetCenterTimeMomentObj.clone().add(20, 'minutes').toISOString();
                 
-                // 나이트스카웃 서버의 MongoDB Native Query API 구문을 철저하게 준수하여
-                // 파라미터를 URL 구조체 문자열로 직조합니다.
                 let precisionTraceUrlString = cfg.url + "/api/v1/entries.json?find[dateString][$gte]=" + searchBoxFloorIsoStr + "&find[dateString][$lte]=" + searchBoxCeilIsoStr + "&count=1";
                 
                 console.log(`[NETWORK] Executing precision bound query to: ${precisionTraceUrlString}`);
@@ -2850,14 +2609,12 @@
                 let jsonParseSequencePromise = responseValidationObj.json();
                 let traceResultArrayBox = await jsonParseSequencePromise;
                 
-                // 서버가 그 강철 박스 안에서 데이터를 단 1개라도 건져올리는데 성공했다면
                 let isDataFishedSuccessfully = (traceResultArrayBox !== null && traceResultArrayBox.length > 0);
                 
                 if(isDataFishedSuccessfully === true) {
                     let extractedTargetBgNumber = traceResultArrayBox[0].sgv;
                     let computedTargetColorHex = getBgColor(extractedTargetBgNumber);
                     
-                    // 기존 버튼 태그 자체를 아예 파괴시키고, 아름다운 결과 뱃지 태그로 강제 치환해버립니다. (outerHTML)
                     let successBadgeHtmlBlock = `
                         <span class="fw-bold px-3 py-2 border rounded shadow-sm d-inline-block" 
                               style="color: ${computedTargetColorHex}; border-color: ${computedTargetColorHex} !important; background-color: rgba(0,0,0,0.5);">
@@ -2867,9 +2624,6 @@
                     btnDomElement.outerHTML = successBadgeHtmlBlock;
                     
                 } else { 
-                    // 40분의 오차 구간을 샅샅이 뒤졌음에도 불구하고 서버가 빈 깡통을 주었다면?
-                    // -> 해당 시간대에 블루투스가 끊겼거나 센서 예열 중이라 기록이 누락된 것이 명백한 사실임.
-                    // 현재 혈당을 거짓말로 보여주지 않고 당당하게 추적 실패를 사용자에게 선고함.
                     let failBadgeHtmlBlock = `
                         <span class="fw-bold px-3 py-2 border border-secondary rounded text-secondary d-inline-block" style="background-color: #222222;">
                             📭 역추적 실패: 해당 시간대의 센서 시그널 핑이 유실되었습니다.
@@ -2881,7 +2635,6 @@
             } catch(errorReference) { 
                 console.error("[DEEP TRACE ERROR] Trace engine failure: ", errorReference);
                 btnDomElement.innerText = "❌ 추적 중 네트워크 패킷 손실 에러"; 
-                // 에러가 났을 때는 재시도를 위해 버튼 잠금을 풀어줍니다.
                 btnDomElement.disabled = false; 
             }
         }
